@@ -1,74 +1,99 @@
-import React, { useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom/cjs/react-router-dom.min';
-import useFetch from '../useFetch';
+import React, { useState, useEffect } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
 
+const EditMovie = () => {
+  const { id } = useParams();
+  const history = useHistory();
+  const [formData, setFormData] = useState({});
+  const [isPending, setIsPending] = useState(true);
+  const [error, setError] = useState(null);
+  const [inputError, setInputError] = useState('');
 
-function EditMovie() {
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/vhs/${id}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      return response.json();
+    })
+    .then(data => {
+      setFormData(data);
+      setIsPending(false);
+      setError(null);
+    })
+    .catch(error => {
+      setIsPending(false);
+      setError(error.message);
+    });
+  }, [id]);
     
-    const {id} = useParams();
-    const {
-        data: movie,
-        isPending,
-        error,
-    } =useFetch(`http://localhost:3000/api/vhs/${id}`);
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [genre, setGenre] = useState("");
-    const [duration, setDuration] = useState("");
-    const [releasedAt, setReleasedAt] = useState("");
-    const [rentalPrice, setRentalPrice] = useState("");
-    const [rentalDuration, setRentalDuration] = useState("");
-    const [quantity, setQuantity] = useState("");
-    const [thumbnail, setThumbnail] = useState("");
-    const [editedThumbnail, setEditedThumbnail] = useState("");
-    const [isWaiting, setIsWaiting] = useState(false);
-     
-    const history= useHistory();
-    
-    const handleEdit = event => {
-        event.preventDefault();
-        setIsWaiting(true);
-        fetch(`http://localhost:3000/api/vhs/${id}`,{
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ thumbnail: editedThumbnail }) 
-        })
-          .then(data => {
-            setIsWaiting(false);
-            history.push(`/movies/${id}`); 
-          })
-          .catch(error => {
-            console.error('Error updating movie:', error);
-          });
-      };
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  
+    if ((name === 'duration' || name === 'releasedAt' || name === 'rentalPrice' || name === 'rentalDuration' || name === 'quantity') && !/^\d+$/.test(value)) {
+      e.target.classList.add("invalid-input");
+    } else {
+      e.target.classList.remove("invalid-input");
+    }
+  
+    const formInputs = Array.from(document.querySelectorAll("input"));
+    const hasInvalidInput = formInputs.some(input => input.classList.contains("invalid-input"));
+    setInputError(hasInvalidInput ? 'Field must not contain string' : '');
+  };
+
+  const handleEdit = event => {
+    event.preventDefault();
+    fetch(`http://localhost:3000/api/vhs/${id}`,{
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData) 
+    }).then(response => response.json())
+      .then(history.push(`/movies/${id}`))
+      .catch(error => {
+        console.error('Error updating movie:', error);
+      });
+  };
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="create">
-        {movie && 
-          <form onSubmit={handleEdit} >
-                <label htmlFor="title">Movie title:</label>
-                  <input id="title" name="title" type="text" value={movie.title} onChange={(e)=> setTitle(e.target.value)}></input>
-                  <label htmlFor="description" >Movie description:</label>
-                  <textarea id="description" name="description" value={movie.description} onChange={(e)=>setDescription(e.target.value)}></textarea>
-                  <label htmlFor="genre" >Movie genre:</label>
-                  <input type="text" id="genre" name="genre" value={movie.genre} onChange={(e)=>setGenre(e.target.value)}></input>
-                  <label htmlFor="duration" >Movie duration:</label>
-                  <input type="text" id="duration" name="duration" value={movie.duration} onChange={(e)=>setDuration(e.target.value)}></input>
-                  <label htmlFor="yearOfRelease">Year of release:</label>
-                  <input type="text" id="yearOfRelease" name="yearOfRelease" value={movie.releasedAt} onChange={(e)=>setReleasedAt(e.target.value)}></input>
-                  <label htmlFor="rentalPrice">Movie rental price:</label>
-                  <input type="text" id="rentalPrice" name="rentalPrice" value={movie.rentalPrice} onChange={(e)=>setRentalPrice(e.target.value)}></input>
-                  <label htmlFor="rentalDuration">Movie rental duration:</label>
-                  <input type="text" id="rentalDuration" name="rentalDuration" value={movie.rentalDuration} onChange={(e)=>setRentalDuration(e.target.value)}></input>
-                  <label htmlFor="quantity">Movie quantity:</label>
-                  <input type="text" id="quantity" name="quantity" value={movie.quantity} onChange={(e)=>setQuantity(e.target.value)}></input>
-                  <label htmlFor="thumbnail">Movie thumbnail:</label>
-                  <input type="text" id="thumbnail" name="thumbnail" value={editedThumbnail } onChange={(e)=>setEditedThumbnail(e.target.value)}></input> 
-              { !isWaiting && <button >Edit</button>}
-              { isWaiting && <button disabled>Editing...</button>}
-          </form>
-        }
+      <form onSubmit={handleEdit} >
+        <label>Title:</label>
+        <input type="text" name="title" defaultValue={formData.title || ''} onChange={handleChange} required/>
+        <label htmlFor="description" >Movie description:</label>
+        <textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} required></textarea> 
+        <label htmlFor="genre" >Movie genre:</label>
+        <input type="text" id="genre" name="genre" value={formData.genre || ''} onChange={handleChange} required></input>
+        <label htmlFor="duration" >Movie duration:</label>
+        <input type="text" id="duration" name="duration" value={formData.duration || ''} onChange={handleChange} required></input>
+        <label htmlFor="releasedAt">Year of release:</label>
+        <input type="text" id="releasedAt" name="releasedAt" value={formData.releasedAt || ''} onChange={handleChange} required></input>
+        <label htmlFor="rentalPrice">Movie rental price:</label>
+        <input type="text" id="rentalPrice" name="rentalPrice" value={formData.rentalPrice || ''} onChange={handleChange} required></input>
+        <label htmlFor="rentalDuration">Movie rental duration:</label>
+        <input type="text" id="rentalDuration" name="rentalDuration" value={formData.rentalDuration || ''} onChange={handleChange} required></input>
+        <label htmlFor="quantity">Movie quantity:</label>
+        <input type="text" id="quantity" name="quantity" value={formData.quantity || ''} onChange={handleChange} required></input>
+        <label htmlFor="thumbnail">Movie thumbnail:</label>
+        <input type="text" id="thumbnail" name="thumbnail" value={formData.thumbnail || ''}  onChange={handleChange}></input> 
+        {inputError && <div className="error">{inputError}</div>}
+        {inputError && <button disabled type="submit">Cant submit</button>}
+        {!inputError && <button  type="submit">Submit</button>}
+      </form>
+         <button className="return-btn" onClick={()=>{history.go(-1)}} >Go back</button>
     </div>
   )
 }

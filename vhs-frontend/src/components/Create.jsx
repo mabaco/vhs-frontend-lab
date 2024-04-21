@@ -25,7 +25,6 @@ const Create = () => {
             headers:{"Content-Type": "application/json"},
             body:JSON.stringify(movie)
         }).then(()=>{
-            console.log("item added "+ JSON.stringify(movie))
             setIsPending(false);
             history.push("/");
         })
@@ -54,31 +53,31 @@ const Create = () => {
             <h2>Add a new movie!</h2> 
             <form onSubmit={handleSubmit}>
             <label htmlFor="title">Movie title:</label>
-            <input id="title" name="title" type="text" value={title} onChange={(e)=> setTitle(e.target.value)}></input>
+            <input id="title" name="title" type="text" value={title} required onChange={(e)=> setTitle(e.target.value)}></input>
             
             <label htmlFor="description" >Movie description:</label>
-            <textarea id="description" name="description" value={description} onChange={(e)=>setDescription(e.target.value)}></textarea>
+            <textarea id="description" name="description" value={description} required onChange={(e)=>setDescription(e.target.value)}></textarea>
 
             <label htmlFor="genre" >Movie genre:</label>
-            <input type="text" id="genre" name="genre" value={genre} onChange={(e)=>setGenre(e.target.value)}></input>
+            <input type="text" id="genre" name="genre" value={genre} required onChange={(e)=>setGenre(e.target.value)}></input>
             
             <label htmlFor="duration" >Movie duration:</label>
-            <input type="text" id="duration" name="duration" value={duration} onChange={(e)=> handleInputChange(e, setDuration)}></input>
+            <input type="text" id="duration" name="duration" value={duration} required onChange={(e)=> handleInputChange(e, setDuration)}></input>
 
             <label htmlFor="yearOfRelease">Year of release:</label>
-            <input type="text" id="yearOfRelease" name="yearOfRelease" value={releasedAt} onChange={(e)=> handleInputChange(e, setReleasedAt)}></input>
+            <input type="text" id="yearOfRelease" name="yearOfRelease" value={releasedAt} required onChange={(e)=> handleInputChange(e, setReleasedAt)}></input>
 
             <label htmlFor="rentalPrice">Movie rental price:</label>
-            <input type="text" id="rentalPrice" name="rentalPrice" value={rentalPrice} onChange={(e)=> handleInputChange(e, setRentalPrice)}></input>
+            <input type="text" id="rentalPrice" name="rentalPrice" value={rentalPrice} required onChange={(e)=> handleInputChange(e, setRentalPrice)}></input>
 
             <label htmlFor="rentalDuration">Movie rental duration:</label>
-            <input type="text" id="rentalDuration" name="rentalDuration" value={rentalDuration} onChange={(e)=> handleInputChange(e, setRentalDuration)}></input>
+            <input type="text" id="rentalDuration" name="rentalDuration" value={rentalDuration} required onChange={(e)=> handleInputChange(e, setRentalDuration)}></input>
 
             <label htmlFor="quantity">Movie quantity:</label>
-            <input type="text" id="quantity" name="quantity" value={quantity} onChange={(e)=> handleInputChange(e, setQuantity)}></input>
+            <input type="text" id="quantity" name="quantity" value={quantity} required onChange={(e)=> handleInputChange(e, setQuantity)}></input>
 
             <label htmlFor="thumbnail">Movie thumbnail:</label>
-            <input type="text" id="thumbnail" name="thumbnail" value={thumbnail} onChange={(e)=>setThumbnail(e.target.value)}></input> 
+            <input type="text" id="thumbnail" name="thumbnail" value={thumbnail}  onChange={(e)=>setThumbnail(e.target.value)}></input> 
                 
             {errorMessage && <div className="error">{errorMessage}</div>}
             { !isPending && <button>Add Movie</button>}
